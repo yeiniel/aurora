@@ -6,18 +6,13 @@
 Aurora's documentation
 ======================
 
-This documentation cover the Aurora development library. We recommend you
-start by reading :doc:`why <about/why-aurora>` this library was developed
-and the :doc:`design philosophy <about/why-aurora>` used in its development.
-
 Contents:
 
 .. toctree::
    :maxdepth: 2
 
-   about/index
-   install
-   tutorials/index
+   intro/why-aurora
+   intro/webapp/tutorial
    api
 
 

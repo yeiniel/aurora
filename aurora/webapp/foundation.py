@@ -71,6 +71,11 @@ class Handler(collections.Callable):
     :class:`Web request <Request>` object. This way the Web handler can be
     called using different request-response pairs (for testing purposes for
     example).
+
+    Example `Hello World!` Web request handler::
+
+        def say_hello(request):
+            return request.response_factory(text='Hello World!')
     """
 
 

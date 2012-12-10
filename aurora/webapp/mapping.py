@@ -187,7 +187,7 @@ class Mapper:
         for rule, metadata in self._rules:
             result = rule.match(path)
 
-            if not result:
+            if result is False:
                 continue
 
             result.update(metadata)

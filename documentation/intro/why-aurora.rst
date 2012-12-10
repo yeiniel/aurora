@@ -38,7 +38,7 @@ object) and the real component requirement expression is at the component
 implementation and not at the component interface. This break the rule that
 explicit is better than implicit.
 
-This are the conditions that motivate me to develop a new `Python`_ based Web 
+This are the conditions that motivate me to develop a new `Python`_ based Web
 framework with :pep:`8` as design philosophy.
 
 
