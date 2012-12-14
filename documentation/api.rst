@@ -1,8 +1,14 @@
+=================
 API Documentation
 =================
 
+View rendering framework
+========================
+.. automodule:: aurora.views
+   :members:
+
 Web application framework
--------------------------
+=========================
 .. automodule:: aurora.webapp
    :members:
 .. automodule:: aurora.webapp.foundation
@@ -13,3 +19,11 @@ Web application framework
    :members:
 .. automodule:: aurora.webapp.testing
    :members:
+
+.. _webcomponents:
+
+Web application components
+==========================
+.. autoclass:: aurora.webcomponents.views.Views
+   :members:
+   :inherited-members:

@@ -1,6 +1,6 @@
-=========================================
-Writing your first Aurora Web application
-=========================================
+=================================================
+Writing your first Aurora Web application, part 1
+=================================================
 
 In this tutorial you will learn by example how to create a Web based Blog
 application using the Aurora Web application framework.
@@ -75,8 +75,8 @@ Inside that `Python`_ source package add a `Python`_ source file named
 
 
 The `Python`_  source file provide a component definition (a class) that
-expose the three basic services (methods) all blogging applications should
-provide. Now we are ready to add the blogging features to our new Web
+expose the three basic services (methods) all Web blogging applications should
+provide. Now we are ready to add the Web blogging features to our new Web
 application, modify the Web application definition `Python`_ source file as
 follows::
 
@@ -109,19 +109,28 @@ follows::
         httpd.serve_forever()
 
 The only change is the addition of a property to the Web application class
-that provide the Blogging component (and therefore its services), even though
-the Web application does nothing with it yet.
+that provide the Web Blogging component (and therefore its services),
+even though the Web application does nothing with it yet.
 
 Making services implement the Web request handling protocol
 ===========================================================
-Before the Web application can expose the Blogging features to its users,
-the Blogging services need to be transformed into Web request handlers. A Web
-request handler by definition is any callable object that accept a Web
-request object as first positional argument and return a Web response object.
-The Web request handler must create the Web response object by calling the
-`response_factory()` service of the Web request object, this way the caller
-keep control of the objects involved in the Web request handling process.
-The three services once modified will look like as follows::
+Before the Web application can expose the Web Blogging features to its users,
+the Blogging services need to be transformed into
+:class:`Web request <aurora.webapp.foundation.Request>` handlers. A
+:class:`Web request <aurora.webapp.foundation.Request>`
+:class:`handler <aurora.webapp.foundation.Handler>` by definition is any
+callable object that accept a
+:class:`Web request <aurora.webapp.foundation.Request>` object as first
+positional argument and return a
+:class:`Web response <aurora.webapp.foundation.Response>` object. The
+:class:`Web request <aurora.webapp.foundation.Request>`
+:class:`handler <aurora.webapp.foundation.Handler>` must create the
+:class:`Web response <aurora.webapp.foundation.Response>` object by calling
+the :meth:`~aurora.webapp.foundation.Request.response_factory` service of the
+:class:`Web request <aurora.webapp.foundation.Request>` object, this way the
+caller keep control of the objects involved in the
+:class:`Web request <aurora.webapp.foundation.Request>` handling
+process. The three services once modified will look like as follows::
 
 
      from aurora.webapp import foundation, mapping
@@ -162,19 +171,24 @@ The three services once modified will look like as follows::
 
 The major changes are in the service implementations and their signatures.
 Even though they are just scaffolds for the real implementations,
-now they can be mapped as a characteristic for Web request paths (the
+now they can be mapped as a characteristic for
+:class:`Web request <aurora.webapp.foundation.Request>` paths (the
 `_handler` characteristic to be more specific). A `Python`_ module
-(`aurora.webapp.foundation`) has been imported but just for documentation
-purposes (on function annotations). Another modification is the addition of a
-new service used to provide a default Web request path mapping (the
-`setup_mapping` service). This way component users can setup default
-component service Web request path mapping in a simple way. The mapping setup
-service take as argument the mapper to setup. It use the
+(:mod:`aurora.webapp.foundation`) has been imported but just for
+documentation purposes (on function annotations). Another modification is
+the addition of a new service used to provide a default
+:class:`Web request <aurora.webapp.foundation.Request>` path
+mapping (the :meth:`setup_mapping` service). This way component users can
+setup default component service
+:class:`Web request <aurora.webapp.foundation.Request>` path mapping in a
+simple way. The mapping setup service take as argument the
+:class:`mapper <aurora.webapp.mapping.Mapper>` to setup. It use the
 :class:`~aurora.webapp.mapping.Route`
 :class:`mapping rule <aurora.webapp.mapping.Rule>` implementation to create the
-mapping and the Web request handling service as the `_handler` characteristic.
-The application need to be modified to call this service at initialization.
-The code modified will look like this::
+mapping and the
+:class:`Web request <aurora.webapp.foundation.Request>` handling service as
+the `_handler` characteristic. The application need to be modified to call
+this service at initialization. The code modified will look like this::
 
     #! /usr/bin/env python3
     from aurora.webapp import infrastructure
@@ -215,9 +229,10 @@ the other paths mapped by the blogging component and see the results.
 Well, this is all for now. In this tutorial you learn how to create a Web
 application using the Aurora library, how to add components that provide
 specific features to your Web application and how to write services that act
-as Web request handlers. In the next part of this tutorial you will learn
-how to integrate components shipped with the Aurora library to address common
-needs and how to to create components to integrate third party libraries.
+as Web request handlers. In the :doc:`next<tutorial-2>` part of this tutorial
+you will learn how to integrate components shipped with the Aurora library to
+address common needs and how to to create components to integrate third
+party libraries.
 
 .. _Python: http://www.python.org/
 .. _WSGI: http://www.wsgi.org/
