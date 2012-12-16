@@ -31,7 +31,7 @@ import abc
 import collections
 import re
 
-__all__ = ['Rule', 'Route', 'Mapper']
+__all__ = ['Rule', 'Route', 'DefaultRule', 'Mapper']
 
 
 class Rule(metaclass=abc.ABCMeta):
@@ -146,6 +146,25 @@ class Route:
 
 
 Rule.register(Route)
+
+
+class DefaultRule:
+    """ A Web request path mapping :class:`Rule` that map all Web requests.
+
+    This is a simple Web request path mapping :class:`Rule` very useful for
+    mapping the Web request handler for not mapped Web requests. It match all
+    Web request paths and return always `False` on :meth:`assemble` method
+    calls.
+    """
+
+    def match(self, path):
+        return {}
+
+    def assemble(self, **characteristics):
+        return False
+
+
+Rule.register(DefaultRule)
 
 
 class Mapper:
