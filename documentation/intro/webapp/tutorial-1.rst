@@ -1,234 +1,106 @@
-=================================================
-Writing your first Aurora Web application, part 1
-=================================================
+=======================================================
+Writing your first Aurora based Web application, part 1
+=======================================================
 
-In this tutorial you will learn by example how to create a Web based Blog
+In this tutorial you will learn by example how to create a Web based Blogging
 application using the Aurora Web application framework.
 
-Creating the Web application
-============================
+For cut and paste purposes, the source code for all stages of this
+tutorial can be browsed at
+`https://github.com/yeiniel/aurora/tree/master/documentation/intro/webapp/src/tutorial-1
+<https://github.com/yeiniel/aurora/tree/master/documentation/intro/webapp/src/tutorial-1>`_.
 
+Basic Layout
+============
 .. admonition:: Scaffolding
 
     Currently the Aurora Web application framework doesn't provide a tool to
     automate the task of creating scaffolds for a new Web application,
     it must be done by hand.
 
-First you need to create a folder that host all application specific files,
-lets call this folder `my-blog`. Inside that folder create a `Python`_ source
-file named `application.py`, we will use this file to host the Web
-application definition. Open the file once created in your preferred text
-editor and write the following::
+Before we start coding our Web application we need to setup the basic layout
+for it. First you need to create a folder that host all application's specific
+files, lets call this folder `tutorial-1`. Inside that folder create a
+`Python`_ module named ``application``, we will use this module to host the
+Web application definition. Open the module file once created in your
+preferred text editor and write the following:
 
-    #! /usr/bin/env python3
-    from aurora.webapp import infrastructure
+.. literalinclude:: src/tutorial-1/application.py
+      :lines: 1-2,5-11,93-
+      :linenos:
+      :language: py
 
-    __all__ = ['Application']
+This `Python`_ module define a class (the :class:`Application` class) that
+inherit from a base class provided by the Web application framework, this is
+the Web application definition. Additional code is provided to allow the
+module to be executed directly as a console application, in this case the
+`WSGI`_ Web server shipped with the `Python`_ standard library is used to
+serve a Web application based on that definition on port ``8008``.
 
-    class Application(infrastructure.Application):
-        """ MyBlog Application
-        """
+If you execute this module at the console and open the
+`http://localhost:8008/ <http://localhost:8008/>`_ address in your preferred
+Web browser you will see a default and simple ``Not Found`` message. This is
+correct and it means you did not setup a Web request path mapping that
+associate a Web request handler to the base Web application path. As you can
+see the Web application framework doesn't do any magic for you and this is one
+of its design principles.
 
-    if __name__ == '__main__':
-        from wsgiref import simple_server
-        from aurora.webapp import foundation
+Defining the Blogging services
+==============================
+There are three services that all Blogging's platforms provide:
 
-        wsgi_app = foundation.wsgi(Application())
-        httpd = simple_server.make_server('', 8008, wsgi_app)
+ - present summary of recently published Posts.
+ - present a published Post.
+ - form for composing a new Post.
 
-        print("Serving on port 8008...")
-        httpd.serve_forever()
+We are going to implement this three services into our Web application. As a
+first step we are going to add the corresponding three service definitions
+stubs (methods) to the Web application definition (class) as follows:
 
-Until now we have a class that define a new Web application (that do nothing
-yet) and a little piece of code used to run the application using the
-`WSGI`_ Web server shipped with the `Python`_ standard library.
+.. literalinclude:: src/tutorial-1/application.py
+      :lines: 19-91
+      :linenos:
+      :language: py
 
-Adding application specific components
-======================================
-We are going to add the services that provide the Blog specific features into
-a isolated component, this way the Blog features can be reused in other
-applications. Lets create a `Python`_ source package named `components`
-inside the application folder to hold the application specific components.
-Inside that `Python`_ source package add a `Python`_ source file named
-`my_blog.py` with the following content::
+As you can see, an additional `Python`_ module has been imported, and used to
+annotate the three service definition stubs (the
+:mod:`aurora.webapp.foundation` module). This has been done to make clear to
+any user that read the source code, that this three services implement the Web
+request handling protocol. By making this three services implement this
+protocol (interface), we make them able to handle Web requests (read the
+:class:`~aurora.webapp.foundation.Handler` documentation for more information).
+But if you restart your Web application at the console once you make the
+changes to your copy of the `Python`_ module, you will not going to
+be able to see this services at action because the Web application don't know
+which Web requests map to the different services that implement the Web
+request handling protocol (remember that the Web application framework don't
+do magic for you).
 
+Mapping Web request paths to Web request handlers
+=================================================
+Now we are going to add code that map this three services as Web request path
+characteristic (specifically the ``_handler`` characteristic) with the Web
+application :attr:`~aurora.webapp.infrastructure.Application.mapper`, this
+way the Web application will know which Web requests sent to the three
+different Web request handlers. The code looks as follows:
 
+.. literalinclude:: src/tutorial-1/application.py
+      :lines: 12-17
+      :linenos:
+      :language: py
 
-    __all__ = ['MyBlog']
+As you can see, an additional `Python`_ module has been imported (the
+:mod:`aurora.webapp.mapping` module), and used to create the Web request path
+rules used to map the tree Web request handlers. Once that you update your
+Web application definition code, restart your Web application running at the
+console and refresh the `http://localhost:8008/ <http://localhost:8008/>`_
+address in your browser. You will see the list of Posts summaries produced by
+the stub, from there you can browse to the pages of the independent Posts.
 
-
-    class MyBlog:
-        """ Component that provide Web blogging services. """
-
-        #
-        # services provide by component
-        #
-
-        def list_posts(self):
-            """ List posts added more recently. """
-
-        def show_post(self):
-            """ Show a post. """
-
-        def add_post(self):
-            """ Add a new Blog post. """
-
-
-The `Python`_  source file provide a component definition (a class) that
-expose the three basic services (methods) all Web blogging applications should
-provide. Now we are ready to add the Web blogging features to our new Web
-application, modify the Web application definition `Python`_ source file as
-follows::
-
-    #! /usr/bin/env python3
-    from aurora.webapp import infrastructure
-    from components import my_blog
-
-    __all__ = ['Application']
-
-    class Application(infrastructure.Application):
-        """ MyBlog Application
-        """
-
-        @property
-        def my_blog(self) -> my_blog.MyBlog:
-            try:
-                return self.__my_blog
-            except AttributeError:
-                self.__my_blog = my_blog.MyBlog()
-                return self.__my_blog
-
-    if __name__ == '__main__':
-        from wsgiref import simple_server
-        from aurora.webapp import foundation
-
-        wsgi_app = foundation.wsgi(Application())
-        httpd = simple_server.make_server('', 8008, wsgi_app)
-
-        print("Serving on port 8008...")
-        httpd.serve_forever()
-
-The only change is the addition of a property to the Web application class
-that provide the Web Blogging component (and therefore its services),
-even though the Web application does nothing with it yet.
-
-Making services implement the Web request handling protocol
-===========================================================
-Before the Web application can expose the Web Blogging features to its users,
-the Blogging services need to be transformed into
-:class:`Web request <aurora.webapp.foundation.Request>` handlers. A
-:class:`Web request <aurora.webapp.foundation.Request>`
-:class:`handler <aurora.webapp.foundation.Handler>` by definition is any
-callable object that accept a
-:class:`Web request <aurora.webapp.foundation.Request>` object as first
-positional argument and return a
-:class:`Web response <aurora.webapp.foundation.Response>` object. The
-:class:`Web request <aurora.webapp.foundation.Request>`
-:class:`handler <aurora.webapp.foundation.Handler>` must create the
-:class:`Web response <aurora.webapp.foundation.Response>` object by calling
-the :meth:`~aurora.webapp.foundation.Request.response_factory` service of the
-:class:`Web request <aurora.webapp.foundation.Request>` object, this way the
-caller keep control of the objects involved in the
-:class:`Web request <aurora.webapp.foundation.Request>` handling
-process. The three services once modified will look like as follows::
-
-
-     from aurora.webapp import foundation, mapping
-
-     __all__ = ['MyBlog']
-
-
-     class MyBlog:
-         """ Component that provide Web blogging services. """
-
-         #
-         # services provide by component
-         #
-
-         def setup_mapping(self, mapper: mapping.Mapper, base_path=''):
-             """ Setup default mapping of component services.
-             :param mapper: The mapping target.
-             :param base_path: The mapping base path.
-             """
-             mapper.add_rule(mapping.Route('/'.join((base_path, ''))),
-                 _handler=self.list_posts)
-             mapper.add_rule(mapping.Route('/'.join((base_path, 'post/(?P<id>\d+)'))),
-                 _handler=self.show_post)
-             mapper.add_rule(mapping.Route('/'.join((base_path, 'compose'))),
-                 _handler=self.add_post)
-
-         def list_posts(self, request: foundation.Request) -> foundation.Response:
-             """ List posts added more recently. """
-             return request.response_factory(text="list of posts")
-
-         def show_post(self, request: foundation.Request) -> foundation.Response:
-             """ Show a post. """
-             return request.response_factory(text="post content")
-
-         def add_post(self, request: foundation.Request) -> foundation.Response:
-             """ Add a new Blog post. """
-             return request.response_factory(text="post form")
-
-The major changes are in the service implementations and their signatures.
-Even though they are just scaffolds for the real implementations,
-now they can be mapped as a characteristic for
-:class:`Web request <aurora.webapp.foundation.Request>` paths (the
-`_handler` characteristic to be more specific). A `Python`_ module
-(:mod:`aurora.webapp.foundation`) has been imported but just for
-documentation purposes (on function annotations). Another modification is
-the addition of a new service used to provide a default
-:class:`Web request <aurora.webapp.foundation.Request>` path
-mapping (the :meth:`setup_mapping` service). This way component users can
-setup default component service
-:class:`Web request <aurora.webapp.foundation.Request>` path mapping in a
-simple way. The mapping setup service take as argument the
-:class:`mapper <aurora.webapp.mapping.Mapper>` to setup. It use the
-:class:`~aurora.webapp.mapping.Route`
-:class:`mapping rule <aurora.webapp.mapping.Rule>` implementation to create the
-mapping and the
-:class:`Web request <aurora.webapp.foundation.Request>` handling service as
-the `_handler` characteristic. The application need to be modified to call
-this service at initialization. The code modified will look like this::
-
-    #! /usr/bin/env python3
-    from aurora.webapp import infrastructure
-    from components import my_blog
-
-    __all__ = ['Application']
-
-    class Application(infrastructure.Application):
-        """ MyBlog Application
-        """
-
-        def __init__(self):
-            self.my_blog.setup_mapping(self.mapper)
-
-        @property
-        def my_blog(self) -> my_blog.MyBlog:
-            try:
-                return self.__my_blog
-            except AttributeError:
-                self.__my_blog = my_blog.MyBlog()
-                return self.__my_blog
-
-    if __name__ == '__main__':
-        from wsgiref import simple_server
-        from aurora.webapp import foundation
-
-        wsgi_app = foundation.wsgi(Application())
-        httpd = simple_server.make_server('', 8008, wsgi_app)
-
-        print("Serving on port 8008...")
-        httpd.serve_forever()
-
-With all this code in place you can take your Web application for a ride. Run
-your application in the console and with your preferred Web browser navigate
-to `http://localhost:8008`, you will see the ``list of posts`` message. Try
-the other paths mapped by the blogging component and see the results.
-
+Conclusion
+==========
 Well, this is all for now. In this tutorial you learn how to create a Web
-application using the Aurora library, how to add components that provide
-specific features to your Web application and how to write services that act
+application using the Aurora library and how to write services that act
 as Web request handlers. In the :doc:`next<tutorial-2>` part of this tutorial
 you will learn how to integrate components shipped with the Aurora library to
 address common needs and how to to create components to integrate third

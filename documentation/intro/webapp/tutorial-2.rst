@@ -4,7 +4,14 @@ Writing your first Aurora Web application, part 2
 
 In this second part of the Web application tutorial you will learn how to
 integrate components shipped with the Aurora library to address common needs
-and how to to create components to integrate third party libraries.
+and how to create components to integrate third party libraries.
+
+Before you start coding we recommend you to copy the `Python`_ module produced
+in the first part of this tutorial named ``application`` into a new
+folder named ``tutorial-2``. For cut and paste purposes, the source code for
+all stages of this tutorial can be browsed at
+`https://github.com/yeiniel/aurora/tree/master/documentation/intro/webapp/src/tutorial-2
+<https://github.com/yeiniel/aurora/tree/master/documentation/intro/webapp/src/tutorial-2>`_.
 
 Using views
 ===========
@@ -14,78 +21,29 @@ enforced to use this pattern or any other related to the concept of
 separation of concerns (`MVP`_, etc). Even though the library provide a
 component very useful to construct the ``View`` part for an `MVC`_ based
 product (The :class:`~aurora.webcomponents.views.Views` component). Next we
-are going to refactor our Web application and associated blogging component to
-implement Web request handlers using the `MVC`_ pattern. As a first step we
-are going to modify the blogging component to explicitly declare its relation
-with the service provided by the :class:`~aurora.webcomponents.views.Views`
-component and to use that service on the Web request handler services:
+are going to refactor our Web application to implement Web request handlers
+using the `MVC`_ pattern. As a first step we are going to make accessible the
+:class:`~aurora.webcomponents.views.Views` component from the Web application
+services by adding it as a Web application attribute (property).
+
+.. literalinclude:: src/tutorial-2/application.py
+      :lines: 35-41
+      :linenos:
+      :language: py
+
+This step require that you first import the :mod:`~aurora.webcomponents.views`
+module. Now we are ready to modify the Web request handlers so they implement
+the `MVC`_ pattern. The code will look as follows:
 
 .. code-block:: python
 
-    import os
-    from aurora.webapp import foundation, mapping
-    from aurora.webcomponents import views
-
-    __all__ = ['MyBlog']
-
-
-    class MyBlog:
-        """ Component that provide Web blogging services. """
-
-        def __init__(self, render2response: views.Views.render2response):
-            # setup component dependencies
-            self.render2response = render2response
-
-        #
-        # component dependencies
-        #
-
-        def render2response(self, request: foundation.Request, template_name: str,
-                            **context) -> foundation.Response:
-            """ Render a template into a `webob.Response` object with context.
-
-            :param request: The request object used to build the response.
-            :param template_name: The relative template name string without the
-                last extension.
-            :param context: The context mapping.
-            :return: The rendered `webob.Response` object.
-            """
-            raise NotImplementedError()
-
-        #
-        # services provide by component
-        #
-
-        def setup_mapping(self, mapper: mapping.Mapper, base_path=''):
-            """ Setup default mapping of component services.
-            :param mapper: The mapping target.
-            :param base_path: The mapping base path.
-            """
-            mapper.add_rule(mapping.Route('/'.join((base_path, ''))),
-                _handler=self.list_posts)
-            mapper.add_rule(mapping.Route('/'.join((base_path, 'post/(?P<id>\d+)'))),
-                _handler=self.show_post)
-            mapper.add_rule(mapping.Route('/'.join((base_path, 'compose'))),
-                _handler=self.add_post
-
-        def setup_views(self, views: views.Views):
-            """ Setup a :class:`~aurora.webcomponents.views.Views` component.
-
-            This service allow the :class:`~aurora.webcomponents.views.Views`
-            component to find templates associated with this component.
-
-            :param views: The :class:`~aurora.webcomponents.views.Views` component.
-            """
-            # add template path
-            views.add_path(os.path.join(os.path.dirname(__file__), 'templates'))
-
         def list_posts(self, request: foundation.Request) -> foundation.Response:
-            """ List posts added more recently. """
-            return self.render2response(request, 'my-blog/list.html')
+            """ List summaries for posts added more recently. """
+            return self.views.render2response(request, 'list.html')
 
         def show_post(self, request: foundation.Request) -> foundation.Response:
             """ Show a post. """
-            return self.render2response(request, 'my-blog/show.html')
+            return self.views.render2response(request, 'show.html')
 
         def add_post(self, request: foundation.Request) -> foundation.Response:
             """ Add a new Blog post. """
@@ -93,84 +51,30 @@ component and to use that service on the Web request handler services:
                 # process form submission
                 pass
             else:
-                return self.render2response(request, 'my-blog/form.html')
+                return self.views.render2response(request, 'form.html')
 
-As you can see a strict dependency on a service is declared as a method with
-no implementation with the same service signature. The service
-implementation is passed at initialization, this allow a great degree of
-granularity and control very useful on testing stage and during software
-evolution. A new service has been added (the :meth:`setup_views` service) to
-allow the :class:`~aurora.webcomponents.views.Views` component to use the
-templates shipped with the component. The Web request handler services has
-been modified to use the
+The Web request handler services has been modified to use the
 :meth:`~aurora.webcomponents.views.Views.render2response` service. This
 service takes a Web request object, the path of the template file (without
 the last extension, read the API documentation for that service for more
 information), an arbitrary number of arguments used as ``view`` context and
 return the corresponding Web response object.
 
-Now that the Web blogging component is ready to use the service provided by 
-the Views service it's time to modify the Web application to inject required
-service into the Web blogging component and to call Views component 
-initialization service provided by the Web blogging component. The code once
-modified look as follows:
+Once the Web application has been modified the only missing step is adding the
+templates used to render the views, but we are going to do that latter once
+we write the data persistence logic. Create a folder inside the Web
+application folder named ``templates``, this is the one that we are going to
+register as template source using the following snippet of code added to the
+Web application :meth:`__init__` method:
 
-.. code-block:: python
+.. literalinclude:: src/tutorial-2/application.py
+      :lines: 27-31
+      :linenos:
+      :language: py
 
-    #! /usr/bin/env python3
-    from aurora.webapp import infrastructure
-    from aurora.webcomponents import views
-    from components import my_blog
-
-    __all__ = ['Application']
-
-    class Application(infrastructure.Application):
-        """ MyBlog Application
-        """
-
-        def __init__(self):
-            self.my_blog.setup_mapping(self.mapper)
-            self.my_blog.setup_views(self.views)
-        
-        @property
-        def views(self) -> views.Views:
-            try:
-                return self.__views
-            except AttributeError:
-                self.__views = views.Views()
-                return self.__views
-        
-        @property
-        def my_blog(self) -> my_blog.MyBlog:
-            try:
-                return self.__my_blog
-            except AttributeError:
-                self.__my_blog = my_blog.MyBlog(
-                    self.views.render2response
-                )
-                return self.__my_blog
-
-    if __name__ == '__main__':
-        from wsgiref import simple_server
-        from aurora.webapp import foundation
-
-        wsgi_app = foundation.wsgi(Application())
-        httpd = simple_server.make_server('', 8008, wsgi_app)
-
-        print("Serving on port 8008...")
-        httpd.serve_forever()
-
-As you can see a new property (:attr:`views`) has been added to the Web 
-application to hold the Views component. The property that hold the Web
-blogging component (:attr:`my_blog`) has been modified to perform
-the injection of the dependent service and the :meth:`setup_views` service 
-is called at application initialization. Once the Web application and the 
-component has been modified the only missing step is adding the templates 
-to the `Python`_ source package where the Web blogging component is located.
-Create a folder inside the `components` `Python`_ source package named
-``templates``, this is the one registered by the blogging component
-:meth:`setup_views` service as template source. Inside this folder create
-another one named ```my-blog``.
+This snippet additionally add as default ``views`` context element the
+:meth:`~aurora.webapp.infrastructure.Application.url_for` Web application
+service used to create links on the Web responses.
 
 At this point is recommended that you review the :ref:`webcomponents` section
 of the :doc:`/api` and learn about other Web application components shipped
@@ -180,187 +84,109 @@ Integrating SQLAlchemy
 ======================
 `SQLAlchemy`_ is a powerful Database abstraction library writen in Python
 that provide a ORM pattern implementation. We re going to use the ORM to
-implement the data layer of the Web blogging component. In order to integrate
-the library into the application we are going to add a new component and will
-name it ``engine_provider``. Add a `Python`_ module with that name inside the 
-`Python`_ package that hold the application specific components (the 
-```components`` `Python`_ source package) with the following content::
+implement the data layer of the Web application (the M part of the `MVC`_
+design pattern). In order to integrate the library into the application we
+are going to add a new component and will name it ``engine_provider``. Add a
+`Python`_ package named ``components`` to the Web application folder and
+there add a `Python`_ module with that name with the following content:
+
+.. literalinclude:: src/tutorial-2/components/engine_provider.py
+      :linenos:
+      :language: py
+
+Once we have that component in place add Web application models into a
+separated `Python`_ module named ``models`` in the Web application folder as
+follows:
+
+.. literalinclude:: src/tutorial-2/models.py
+      :linenos:
+      :language: py
 
 
-    import sqlalchemy
+Now to make the models available to the Web application definition we need to
+add the following import line:
 
-    __all__ = ['EngineProvider']
+.. literalinclude:: src/tutorial-2/application.py
+      :lines: 11
+      :linenos:
+      :language: py
 
+As we do with the ``views`` component we need to make accessible the component
+from the Web application services by importing the component `Python`_ module
+into the Web application definition `Python`_ module and adding it as a Web
+application attribute (property):
 
-    class EngineProvider:
-        """ `SQLAlchemy`_ support provider.
+.. literalinclude:: src/tutorial-2/application.py
+      :lines: 44-50
+      :linenos:
+      :language: py
 
-        This component provide support for use the ``SQLAlchemy`` library to
-        connect to one database. The `get_engine` method is the only exposed
-        service.
+Now to make things easy lets ensure that tables on database needed to
+store the model data are available by adding the following line to the Web
+application :meth:`__init__` method:
 
-        The source database is configured using the `dsn` component attribute.
+.. literalinclude:: src/tutorial-2/application.py
+      :lines: 33-34
+      :linenos:
+      :language: py
 
-        If you need different database connections in the same application you
-        can create multiple instances of this component and distribute them as
-        needed.
+And finally lets show you the Web request handlers services once modified to
+use the :meth:`get_engine` service from the :class:`EngineProvider` component:
 
-        .. _SQLAlchemy: http://www.sqlalchemy.org/
-        """
+.. literalinclude:: src/tutorial-2/application.py
+      :lines: 52-94
+      :linenos:
+      :language: py
 
-        dsn = 'sqlite:///data/application.db'
+For this code to work you need first to import the following modules:
+:mod:`datetime`, :mod:`sqlalchemy` and :mod:`sqlalchemy.orm`.
 
-        def __init__(self):
-            self._engine = sqlalchemy.create_engine(self.dsn)
+The used architecture allow us to share a common database connections across a
+set  of components and provide different database engine for different
+components if needed (consider the case you are using one component that use
+specific  features from one database engine). Once we have the Blogging
+application passing real data objects into the ``views`` we only need to
+show you the templates used.
 
-        def get_engine(self) -> sqlalchemy.engine.Engine:
-            """ Return an `sqlalchemy` engine object.
-            :return: a ready to use `sqlalchemy.engine.Engine` object.
-            """
-            return self._engine
+``templates/list.html.suba``
 
-Once we have the component, declare a strict depedency for this component 
-service on the Web blogging component and modify the Bloggin services to use 
-that service to implement the data model as follows:
+.. literalinclude:: src/tutorial-2/templates/list.html.suba
+      :linenos:
+      :language: html
 
-.. code-block:: python
-    
-    import datetime
-    import os
-    import sqlalchemy
-    from sqlalchemy.ext import declarative
+``templates/summary.suba``
 
-    from aurora.webapp import foundation, mapping
-    from aurora.webcomponents import views
-    from . import engine_provider
+.. literalinclude:: src/tutorial-2/templates/summary.suba
+      :linenos:
+      :language: html
 
-    __all__ = ['MyBlog']
+``templates/show.html.suba``
 
+.. literalinclude:: src/tutorial-2/templates/show.html.suba
+      :linenos:
+      :language: html
 
-    Model = declarative.declarative_base()
+``templates/form.html.suba``
 
+.. literalinclude:: src/tutorial-2/templates/form.html.suba
+      :linenos:
+      :language: html
 
-    class Post(Model):
-        __tablename__ = 'blog_post'
+As you can guess by the template file extension this templates are using the
+`suba`_  template engine, a lightweight template engine based on the mod (%)
+operator.
 
-        id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
-        title = sqlalchemy.Column(sqlalchemy.String, nullable=False)
-        content = sqlalchemy.Column(sqlalchemy.Text, nullable=False)
-        author = sqlalchemy.Column(sqlalchemy.String, nullable=False)
-        date = sqlalchemy.Column(sqlalchemy.DateTime, nullable=False)
-
-
-    class MyBlog:
-        """ Component that provide Web blogging services. """
-
-        def __init__(self, render2response: views.Views.render2response,
-                get_engine: engine_provider.EngineProvider.get_engine):
-            # setup component dependencies
-            self.render2response = render2response
-            self.get_engine = get_engine
-            
-            # try to create the database tables if needed
-            Model.metadata.create_all(get_engine())
-
-        #
-        # component dependencies
-        #
-
-        def render2response(self, request: foundation.Request, template_name: str,
-                            **context) -> foundation.Response:
-            """ Render a template into a `webob.Response` object with context.
-
-            :param request: The request object used to build the response.
-            :param template_name: The relative template name string without the
-                last extension.
-            :param context: The context mapping.
-            :return: The rendered `webob.Response` object.
-            """
-            raise NotImplementedError()
-        
-        def get_engine(self) -> sqlalchemy.engine.Engine:
-            """ Return an :class:`sqlalchemy.engine.Engine` object.
-            :return: a ready to use :class:`sqlalchemy.engine.Engine` object.
-            """
-            raise NotImplementedError()
-
-        #
-        # services provide by component
-        #
-
-        def setup_mapping(self, mapper: mapping.Mapper, base_path=''):
-            """ Setup default mapping of component services.
-            :param mapper: The mapping target.
-            :param base_path: The mapping base path.
-            """
-            mapper.add_rule(mapping.Route('/'.join((base_path, ''))),
-                _handler=self.list_posts)
-            mapper.add_rule(mapping.Route('/'.join((base_path, 'post/(?P<id>\d+)'))),
-                _handler=self.show_post)
-            mapper.add_rule(mapping.Route('/'.join((base_path, 'compose'))),
-                _handler=self.add_post
-
-        def setup_views(self, views: views.Views):
-            """ Setup a :class:`~aurora.webcomponents.views.Views` component.
-
-            This service allow the :class:`~aurora.webcomponents.views.Views`
-            component to find templates associated with this component.
-
-            :param views: The :class:`~aurora.webcomponents.views.Views` component.
-            """
-            # add template path
-            views.add_path(os.path.join(os.path.dirname(__file__), 'templates'))
-
-        def list_posts(self, request: foundation.Request) -> foundation.Response:
-            """ List posts added more recently. """
-            orm_session = orm.sessionmaker(bind=self.get_engine())()
-            
-            return self.render2response(request, 'my-blog/list.html',
-                posts=orm_session.query(models.Post).order_by(
-                    sqlalchemy.desc(models.Post.date))[:10])
-
-        def show_post(self, request: foundation.Request) -> foundation.Response:
-            """ Show a post. """
-            post_id = request.params['id']
-
-            orm_session = orm.sessionmaker(bind=self.get_engine())()
-            
-            return self.render2response(request, 'my-blog/show.html',
-                post=orm_session.query(models.Post).filter_by(id=post_id).one())
-
-        def add_post(self, request: foundation.Request) -> foundation.Response:
-            """ Add a new Blog post. """
-            if request.method == 'POST':
-                # process form submission
-                # TODO: need to implement form validation here.
-                post = models.Post(
-                    title=request.POST['title'],
-                    content=request.POST['content'],
-                    author='',
-                    date=datetime.datetime.utcnow(),
-                )
-
-                orm_session = orm.sessionmaker(bind=self.get_engine())()
-                orm_session.add(post)
-                orm_session.commit()
-
-                # redirect to the post page
-                resp = request.ResponseClass()
-                resp.status_int = 302
-                resp.location = request.application_url
-
-                return resp
-            else:
-                return self.render2response(request, 'my-blog/form.html')
-
-This architecture allow us to share a common database connections across a set 
-of components and provide different database engine for different components if
-needed (consider the case you are using one component that use specific 
-features from one database engine). Once we have the Blogging component passing
-real data objects into the views we only need to update the view templates to 
-use that data.
+Conclusion
+==========
+Well, this is all for now. In this tutorial you learn how to integrate
+components provided by the Aurora library into your application and how to
+create new ones to integrate third party libraries to provide your
+Web application with features not provided by the Aurora library and you have
+learn that the Aurora library provide a generic template based ``views``
+framework with support by default for the `suba`_ template engine.
 
 .. _MVC: http://en.wikipedia.org/wiki/Model–view–controller
 .. _MVP: http://en.wikipedia.org/wiki/Model–view–presenter
 .. _Python: http://www.python.org/
 .. _SQLAlchemy: http://www.sqlalchemy.org/
+.. _suba: https://github.com/jldailey/suba

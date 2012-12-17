@@ -1,7 +1,0 @@
-<html>
-    <body>
-        %(render('my-blog/abstract'))
-        %(render('my-blog/abstract'))
-        %(render('my-blog/abstract'))
-    </body>
-</html>

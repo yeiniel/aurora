@@ -20,10 +20,10 @@ class EngineProvider:
     .. _SQLAlchemy: http://www.sqlalchemy.org/
     """
 
-    dsn = 'sqlite:///data/application.db'
+    dsn = 'sqlite:///application.db'
 
-    def __init__(self):
-        self._engine = sqlalchemy.create_engine(self.dsn)
+    def __init__(self, dsn=None):
+        self._engine = sqlalchemy.create_engine(dsn or self.dsn)
 
     def get_engine(self) -> sqlalchemy.engine.Engine:
         """ Return an :class:`sqlalchemy.engine.Engine` object.
