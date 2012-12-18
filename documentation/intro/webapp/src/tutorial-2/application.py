@@ -18,6 +18,8 @@ class Application(webapp.Application):
     """
 
     def __init__(self):
+        super().__init__()
+
         self.mapper.add_rule(mapping.Route('/'), _handler=self.list_posts)
         self.mapper.add_rule(mapping.Route('/post/(?P<id>\d+)'),
             _handler=self.show_post)

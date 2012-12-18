@@ -1,6 +1,6 @@
-=================================================
-Writing your first Aurora Web application, part 2
-=================================================
+=======================================================
+Writing your first Aurora based Web application, part 2
+=======================================================
 
 In this second part of the Web application tutorial you will learn how to
 integrate components shipped with the Aurora library to address common needs
@@ -27,7 +27,7 @@ using the `MVC`_ pattern. As a first step we are going to make accessible the
 services by adding it as a Web application attribute (property).
 
 .. literalinclude:: src/tutorial-2/application.py
-      :lines: 35-41
+      :lines: 37-43
       :linenos:
       :language: py
 
@@ -68,7 +68,7 @@ register as template source using the following snippet of code added to the
 Web application :meth:`__init__` method:
 
 .. literalinclude:: src/tutorial-2/application.py
-      :lines: 27-31
+      :lines: 29-33
       :linenos:
       :language: py
 
@@ -117,7 +117,7 @@ into the Web application definition `Python`_ module and adding it as a Web
 application attribute (property):
 
 .. literalinclude:: src/tutorial-2/application.py
-      :lines: 44-50
+      :lines: 47-53
       :linenos:
       :language: py
 
@@ -126,7 +126,7 @@ store the model data are available by adding the following line to the Web
 application :meth:`__init__` method:
 
 .. literalinclude:: src/tutorial-2/application.py
-      :lines: 33-34
+      :lines: 35-37
       :linenos:
       :language: py
 
@@ -134,7 +134,7 @@ And finally lets show you the Web request handlers services once modified to
 use the :meth:`get_engine` service from the :class:`EngineProvider` component:
 
 .. literalinclude:: src/tutorial-2/application.py
-      :lines: 52-94
+      :lines: 55-97
       :linenos:
       :language: py
 

@@ -12,8 +12,7 @@ Contents:
    :maxdepth: 2
 
    intro/why-aurora
-   intro/webapp/tutorial-1
-   intro/webapp/tutorial-2
+   intro/webapp/index
    api
 
 
