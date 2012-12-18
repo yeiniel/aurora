@@ -121,7 +121,7 @@ class Assets:
         
         mapping.Rule.register(Rule)
 
-        return functools.partial(Route, self)
+        return functools.partial(Rule, self)
 
     def handler(self, request):
         """ Handle Web requests by serving static assets.
