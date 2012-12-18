@@ -33,7 +33,7 @@ import mimetypes
 import os
 from urllib import parse as urllib_parse
 
-from aurora.webapp import mapping
+from aurora.webapp import foundation, mapping
 
 __all__ = ['Assets']
 
@@ -93,7 +93,7 @@ class Assets:
     #
 
     @property
-    def rule_factory(self):
+    def rule_factory(self) -> mapping.Rule:
         """ Return an object used to route and assemble URIs for static assets.
         """
 
@@ -123,14 +123,14 @@ class Assets:
 
         return functools.partial(Rule, self)
 
-    def handler(self, request):
+    def handler(self, request: foundation.Request) -> foundation.Response:
         """ Handle Web requests by serving static assets.
         """
 
         # resolve absolute file path name
         file_name = self._resolve_filename(request.GET['filename'])
 
-        response = request.ResponseClass()
+        response = request.response_factory()
 
         # resolve file content type
         response.content_type, _ = mimetypes.guess_type(file_name)

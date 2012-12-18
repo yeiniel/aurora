@@ -27,4 +27,8 @@
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """ Ready to use, extensible and well writen Web application components.
+
+This components are shipped with the Aurora library because they provide
+basic services usefull to almost all Web applications and we intend to
+standardize this services.
 """
