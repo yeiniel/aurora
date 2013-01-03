@@ -1,0 +1,22 @@
+<section>
+    <form action="%(url_for(_handler=self.compose_post))" method="post">
+        <fieldset>
+            <legend>Add Post</legend>
+            <div class="clarfix">
+                <label for="title">Title</label>
+                <div class="input">
+                    <input type="text" id="title" name="title"></input>
+                </div>
+            </div>
+            <div class="clarfix">
+                <label for="content">Content</label>
+                <div class="input">
+                    <textarea id="content" name="content" class="xlarge" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="actions">
+                <input class="btn primary" type="submit" name="submit" value="Add" />
+            </div>
+        </fieldset>
+    </form>
+</section>

@@ -28,7 +28,6 @@
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import collections
-import functools
 import hashlib
 import hmac
 import random
@@ -182,7 +181,7 @@ class SessionProvider:
             del self.get_cache()[id]
 
 
-    def after_handle(self, response: foundation.Response):
+    def post_dispatch(self, response: foundation.Response):
         """ Service meant to be used as a application `after_handle` listener.
 
         It is only available if the `get_request` optional dependency service

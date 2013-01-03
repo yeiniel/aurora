@@ -39,24 +39,3 @@ class Application(infrastructure.Application):
     service invoked for not mapped Web requests.
     """
 
-    def __init__(self):
-        self.mapper.add_rule(mapping.DefaultRule(), _handler=self.not_found)
-
-    def not_found(self, request: foundation.Request) -> foundation.Response:
-        """ Service invoked for not mapped Web requests.
-
-        This service is the first :class:`~mapping.Rule` registered with the
-        application's Web request path :attr:`.mapper` at initialization using
-        the :class:`~mapping.DefaultRule` :class:`~mapping.Rule`. It shows a
-        basic not found message on the client browser.
-        """
-        return request.response_factory(text="""
-        <html>
-            <body>
-                <h1>Not Found</h1>
-                <p>
-                    The requested path is not found on this server.
-                </p>
-            </body>
-        </html>
-        """, status="404 Not Found")

@@ -47,12 +47,12 @@ class Request(webob.Request):
     """ Web request.
 
     The Web request provide access to the information sent by the
-    client browser to the application.
+    client browser to the Web application.
     """
 
     @property
     def response_factory(self) -> Response:
-        """ Factory that produce a :class:`Web response <Response>` object.
+        """ Factory used to produce a :class:`Web response <Response>` object.
         """
         return Response
 
@@ -60,10 +60,14 @@ class Request(webob.Request):
 class Handler(collections.Callable):
     """ Web request handler.
 
+    .. admonition::
+
+        This class is not meant to be inherited it is here just for interface
+        documentation purposes.
+
     A Web request handler is any callable object that accept as first
     positional argument a :class:`Web request <Request>` object and return a
-    :class:`Web response <Response>` object. This class is not meant to be
-    inherited it is here just for interface documentation purposes.
+    :class:`Web response <Response>` object.
 
     The Web request handler must create the :class:`Web response <Response>`
     object by calling the factory referenced by the

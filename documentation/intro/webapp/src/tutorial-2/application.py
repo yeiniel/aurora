@@ -7,8 +7,8 @@ from aurora import webapp
 from aurora.webapp import foundation, mapping
 from aurora.webcomponents import views
 
-from components import engine_provider
 import models
+from components import engine_provider
 
 __all__ = ['Application']
 

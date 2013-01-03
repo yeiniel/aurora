@@ -26,11 +26,58 @@
 # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-""" Ready to use, extensible and well writen Web application components.
 
-This components are shipped with the Aurora library because they provide
-basic services useful to almost all Web applications and we intend to
-standardize this services.
-"""
+import os
 
-# TODO: move this package inside the `webapp` package.
+from aurora import di, event, webapp
+from aurora.webcomponents import assets, layout, views
+
+from components import blog, engine_provider
+
+__all__ = ['Application']
+
+
+class Application(webapp.Application):
+    """ Blogpress blogging application.
+    """
+
+    def __init__(self):
+        super().__init__()
+
+        self.mapper.add_rule(self.assets.rule_factory())
+
+        self.blog.setup_mapping(self.mapper.add_rule)
+        self.blog.setup_views(self.views.add_path)
+
+        self.views.add_path(os.path.join(os.path.dirname(__file__),
+            'templates'))
+        self.views.add_default('url_for', self.url_for)
+        self.views.add_default('assets', self.assets.handler)
+        self.views.add_default('self', self)
+
+        self.assets.add_path(os.path.join(os.path.dirname(__file__),
+            'static'))
+
+    assets = di.create_descriptor(assets.Assets)
+
+    blog = di.create_descriptor(blog.Blog, 'db.get_engine',
+        'views.render2response', 'url_for')
+
+    db = di.create_descriptor(engine_provider.EngineProvider)
+
+    layout = di.create_descriptor(layout.Layout, 'views.render')
+
+    post_dispatch = di.create_descriptor(event.Event,
+        di.List(['layout.post_dispatch']))
+
+    views = di.create_descriptor(views.Views)
+
+if __name__ == '__main__':
+    from wsgiref import simple_server
+    from aurora.webapp import foundation
+
+    wsgi_app = foundation.wsgi(Application())
+    httpd = simple_server.make_server('', 8008, wsgi_app)
+
+    print("Serving on port 8008...")
+    httpd.serve_forever()

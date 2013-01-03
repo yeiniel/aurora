@@ -27,6 +27,8 @@
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import functools
+
 __all__ = ['partial' , 'Layout']
 
 
@@ -34,6 +36,7 @@ def partial(handler):
     """ Mark the handler as a view partial (set response Content-Type).
     """
 
+    @functools.wraps(handler)
     def _handler(*args, **kwargs):
         response = handler(*args, **kwargs)
         response.content_type = 'x-application/partial'
@@ -86,7 +89,7 @@ class Layout:
     # services provided by the component
     #
 
-    def after_handle(self, response):
+    def post_dispatch(self, response):
         """ Wrap the response body using a layout template.
 
         This service is intended to be registered as a

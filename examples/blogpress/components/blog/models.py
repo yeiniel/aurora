@@ -26,11 +26,23 @@
 # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-""" Ready to use, extensible and well writen Web application components.
 
-This components are shipped with the Aurora library because they provide
-basic services useful to almost all Web applications and we intend to
-standardize this services.
-"""
+import sqlalchemy
+from sqlalchemy.ext import declarative
 
-# TODO: move this package inside the `webapp` package.
+__all__ = ['Model', 'Post']
+
+
+Model = declarative.declarative_base()
+
+
+class Post(Model):
+    __tablename__ = 'blog_posts'
+
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
+    title = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+    content = sqlalchemy.Column(sqlalchemy.Text, nullable=False)
+    author = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+    created = sqlalchemy.Column(sqlalchemy.DateTime, nullable=False)
+    modified = sqlalchemy.Column(sqlalchemy.DateTime, nullable=False)
+    published = sqlalchemy.Column(sqlalchemy.DateTime, nullable=True)

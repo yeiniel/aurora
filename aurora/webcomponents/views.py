@@ -27,6 +27,7 @@
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import html
 import mimetypes
 
 from aurora import views
@@ -42,7 +43,13 @@ class Views(views.Views):
     the ``Views`` framework. It provide the same services plus a new one
     (the :meth:`render2response` service) specific for usage in the context
     of Web applications.
+
+    The component add a ``escape`` default content item designed to escape all
+    content that represent a XSS attack vulnerability.
     """
+
+    def __init__(self):
+        self.add_default('escape', html.escape)
 
     def render2response(self, request: foundation.Request, template_name: str,
                         **context) -> foundation.Response:
@@ -61,7 +68,7 @@ class Views(views.Views):
             object.
         """
         response = request.response_factory(
-            text=self.render(template_name, **context))
+            text=self.render(template_name, request=request, **context))
 
         response.content_type, _ = mimetypes.guess_type(template_name)
         if not response.content_type:
@@ -69,6 +76,24 @@ class Views(views.Views):
 
         return response
 
+    def handler4template(self, template_name: str, **context) -> foundation.Handler:
+        """ Produce a Web request handler that simply render a template.
+
+        This service use the :meth:`render2response` service and the same
+        rules about template names are applied.
+`
+
+        :param template_name: The relative template name string without the
+            last extension.
+        :param context: The context mapping.
+        :return: A Web request
+            :class:`handler <aurora.webapp.foundation.Handler>`.
+        """
+
+        def handler(request):
+            return self.render2response(request, template_name, **context)
+
+        return handler
 
 if not mimetypes.inited:
     mimetypes.init()

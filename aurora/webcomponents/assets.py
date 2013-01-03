@@ -57,8 +57,6 @@ class Assets:
        :meth:`add_path` service.
     """
 
-    base_path = ''
-
     @property
     def _paths(self) -> list:
         try:
@@ -99,24 +97,27 @@ class Assets:
 
         class Rule:
 
-            def __init__(self, assets):
+            def __init__(self, assets, base_uri=''):
                 self.assets = assets
-
-            complexity = 1000
+                self.base_uri = base_uri
 
             def match(self, uri: str):
+                if uri.startswith(self.base_uri):
+                    uri = uri.replace(self.base_uri, '', 1)
+                else:
+                    return False
 
                 if self.assets._resolve_filename(uri) is None:
                     return False
                 else:
-                    return {'filename': uri}
+                    return {'filename': uri, '_handler':self.assets.handler}
 
             def assemble(self, **options):
-                if 'filename' not in options:
+                if 'filename' not in options or len(options) != 1:
                     return False
                 else:
                     return urllib_parse.urljoin(
-                        self.assets.base_path, options['filename']
+                        self.base_uri, options['filename']
                     )
         
         mapping.Rule.register(Rule)

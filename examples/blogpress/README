@@ -1,0 +1,9 @@
+About the Blogpress application
+===============================
+
+Installation
+------------
+- ensure all dependencies declared on *pip-requirements.txt files are installed
+  into the Python target system (maybe a virtual environment).
+- Download and copy the Twitter Bootstrap library into
+  static/twitter-bootstrap (required by the application layout.html template).

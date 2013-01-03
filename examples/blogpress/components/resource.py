@@ -26,11 +26,19 @@
 # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-""" Ready to use, extensible and well writen Web application components.
-
-This components are shipped with the Aurora library because they provide
-basic services useful to almost all Web applications and we intend to
-standardize this services.
+""" Universal content definition and management.
 """
 
-# TODO: move this package inside the `webapp` package.
+from aurora.webapp import foundation
+
+class Resource:
+    pass
+
+class ResourceHandler(foundation.Handler):
+
+    def __init__(self, resource: Resource):
+        self.resource = resource
+
+    def __call__(self, request: foundation.Request) -> foundation.Response:
+
+        return getattr(self, '_'.join(('do', request.method.lower())))(request)

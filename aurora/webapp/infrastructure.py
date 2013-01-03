@@ -62,7 +62,30 @@ class Application:
             return self.__mapper
         except AttributeError:
             self.__mapper = mapping.Mapper()
+            #noinspection PyTypeChecker
+            self.__mapper.add_rule(mapping.DefaultRule(),
+                _handler=self.not_found)
             return self.__mapper
+
+    def not_found(self, request: foundation.Request) -> foundation.Response:
+        """ Service invoked for not mapped Web requests.
+
+        This service is the first :class:`~mapping.Rule` registered with the
+        application's Web request path :attr:`.mapper` using the
+        :class:`~mapping.DefaultRule` :class:`~mapping.Rule`. It shows a
+        basic not found message on the client browser.
+        """
+        #noinspection PyArgumentList
+        return request.response_factory(text="""
+        <html>
+            <body>
+                <h1>Not Found</h1>
+                <p>
+                    The requested path is not found on this server.
+                </p>
+            </body>
+        </html>
+        """, status="404 Not Found")
 
     def get_request(self) -> foundation.Request:
         """ The Web request been handled by the application.

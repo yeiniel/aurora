@@ -1,0 +1,6 @@
+<section>
+    <h1><a href="%(url_for(_handler=self.show_post, id=str(post.id)))">
+        %(escape(post.title))</a></h1>
+    <div class="date">%(str(post.published))</div>
+    <div class="content">%(escape(post.content))</div>
+</section>

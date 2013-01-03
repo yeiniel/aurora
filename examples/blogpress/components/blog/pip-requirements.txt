@@ -1,0 +1,6 @@
+
+#
+# even though database access is provided by a dependency service the
+# SQLAlchemy is needed for Model object declaration and SQL query construction.
+#
+SQLAlchemy>=0.7.9
