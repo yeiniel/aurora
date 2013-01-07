@@ -147,7 +147,7 @@ class Blog:
             posts=orm_session.query(models.Post).filter(
                 models.Post.published != None).order_by(
                 sqlalchemy.desc(models.Post.published))[:10],
-            self=self, url_for=self.url_for)
+            blog=self, url_for=self.url_for)
 
     @layout.partial
     def show_post(self, request: foundation.Request) -> foundation.Response:
@@ -169,7 +169,7 @@ class Blog:
         post = orm_session.query(models.Post).filter_by(id=id).one()
 
         return self.render2response(request, 'blog/show.html', post=post,
-            self=self, url_for=self.url_for)
+            blog=self, url_for=self.url_for)
 
     @layout.partial
     def compose_post(self, request: foundation.Request) -> foundation.Response:
@@ -207,5 +207,5 @@ class Blog:
 
             return resp
         else:
-            return self.render2response(request, 'blog/form.html', self=self,
+            return self.render2response(request, 'blog/form.html', blog=self,
                 url_for=self.url_for)

@@ -31,7 +31,7 @@
 
 import collections
 
-__all__ = ['Dependency', 'List', 'Reference', 'Value', 'inject',
+__all__ = ['Dependency', 'list', 'dict', 'Reference', 'Value', 'inject',
            'create_descriptor']
 
 
@@ -57,18 +57,27 @@ class Dependency:
         raise NotImplementedError()
 
 
-class List(Dependency, list):
+class list(Dependency, list):
     """ Definition that once it's resolved produce a list of dependencies
 
     It takes as constructor argument a list of dependency definition objects.
     """
 
     def resolve(self, container):
-        _normalize_arg_spec(self)
-
         for i, value in enumerate(self):
-            if hasattr(value, 'resolve'):
-                self[i] = value.resolve(container)
+            value = _normalize_dependency(value)
+
+            self[i] = value.resolve(container)
+
+        return self
+
+class dict(Dependency, dict):
+
+    def resolve(self, container: object):
+        for key, value in self.items():
+            value = _normalize_dependency(value)
+
+            self[key] = value.resolve(container)
 
         return self
 
@@ -103,21 +112,15 @@ class Value(Dependency):
     def resolve(self, container):
         return self.value
 
-def _normalize_arg_spec(arg_spec):
+def _normalize_dependency(dependency: Dependency) -> Dependency:
 
-    for i, value in enumerate(arg_spec):
-        if isinstance(value, str):
-            arg_spec[i] = Reference(value)
+    if hasattr(dependency, 'resolve'):
+        return dependency
 
-    return arg_spec
+    if isinstance(dependency, str):
+        return Reference(dependency)
 
-
-def _normalize_attr_spec(spec):
-    for key, value in spec.items():
-        if isinstance(value, str):
-            spec[key] = Reference(value)
-
-    return spec
+    return Value(dependency)
 
 def inject(target_factory: collections.Callable, container: object, *arg_spec, **attr_spec):
     """ Produce target by injecting its dependencies.
@@ -134,8 +137,11 @@ def inject(target_factory: collections.Callable, container: object, *arg_spec, *
     """
     # TODO: need to implement DI auto-resolution capabilities
 
-    arg_spec = _normalize_arg_spec(list(arg_spec))
-    attr_spec = _normalize_attr_spec(attr_spec)
+    arg_spec = map(_normalize_dependency, arg_spec)
+    attr_spec.update(map(
+        lambda key, value: (key, _normalize_dependency(value)),
+        attr_spec.items()
+    ))
 
     args = list(map(lambda item: item.resolve(container), arg_spec))
     target = target_factory(*args)

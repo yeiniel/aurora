@@ -1,5 +1,5 @@
 <section>
     %(for post in posts:)
-        %(render('blog/post-summary', post=post, self=self, url_for=url_for))
+        %(render('blog/post-summary', post=post, blog=blog, url_for=url_for))
     %/
 </section>

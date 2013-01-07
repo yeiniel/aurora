@@ -68,7 +68,7 @@ class Application(webapp.Application):
     layout = di.create_descriptor(layout.Layout, 'views.render')
 
     post_dispatch = di.create_descriptor(event.Event,
-        di.List(['layout.post_dispatch']))
+        di.list(['layout.post_dispatch']))
 
     views = di.create_descriptor(views.Views)
 
